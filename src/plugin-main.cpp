@@ -17,6 +17,7 @@
 #include <fstream>
 
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Media.Control.h>
 #include <winrt/Windows.Storage.Streams.h>
 #ifndef NOMINMAX
@@ -61,15 +62,46 @@ void MediaPollWorker() {
     while (!g_stop) {
         try {
             auto manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync().get();
-            auto session = manager.GetCurrentSession();
+            
+            // Get all sessions
+            auto sessionList = manager.GetSessions();
+            std::vector<std::string> apps;
+            for (auto&& s : sessionList) {
+                apps.push_back(to_string(s.SourceAppUserModelId()));
+            }
+
+            // Target session
+            std::string targetSource = "auto";
+            {
+                std::lock_guard<std::mutex> lock(g_media_mutex);
+                if (g_settings.contains("source") && g_settings["source"].is_string()) {
+                    targetSource = g_settings["source"].get<std::string>();
+                }
+            }
+
+            GlobalSystemMediaTransportControlsSession session = nullptr;
+            if (targetSource != "auto" && !targetSource.empty()) {
+                for (auto&& s : sessionList) {
+                    if (to_string(s.SourceAppUserModelId()) == targetSource) {
+                        session = s;
+                        break;
+                    }
+                }
+            }
+            if (!session) {
+                session = manager.GetCurrentSession();
+            }
             
             json newState = json::object();
             newState["title"] = "";
             newState["artist"] = "";
             newState["status"] = "Paused";
             newState["albumArt"] = nullptr;
+            newState["availableApps"] = apps;
+            newState["app"] = "";
             
             if (session) {
+                newState["app"] = to_string(session.SourceAppUserModelId());
                 auto properties = session.TryGetMediaPropertiesAsync().get();
                 if (properties) {
                     newState["title"] = to_string(properties.Title());
@@ -119,7 +151,28 @@ void MediaPollWorker() {
 void SendMediaCommand(const std::string& cmd) {
     try {
         auto manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync().get();
-        auto session = manager.GetCurrentSession();
+        std::string targetSource = "auto";
+        {
+            std::lock_guard<std::mutex> lock(g_media_mutex);
+            if (g_settings.contains("source") && g_settings["source"].is_string()) {
+                targetSource = g_settings["source"].get<std::string>();
+            }
+        }
+
+        GlobalSystemMediaTransportControlsSession session = nullptr;
+        if (targetSource != "auto" && !targetSource.empty()) {
+            auto sessionList = manager.GetSessions();
+            for (auto&& s : sessionList) {
+                if (to_string(s.SourceAppUserModelId()) == targetSource) {
+                    session = s;
+                    break;
+                }
+            }
+        }
+        if (!session) {
+            session = manager.GetCurrentSession();
+        }
+
         if (session) {
             if (cmd == "playpause") session.TryTogglePlayPauseAsync().get();
             else if (cmd == "next") session.TrySkipNextAsync().get();
