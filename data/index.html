@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Music Dock - Settings</title>
+    <style>
+        /* ─── AURA GLASS DOCK STYLE ─── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        html { background: #0d0d0f; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: transparent;
+            color: #fff;
+            overflow-x: hidden;
+            padding: 16px;
+            font-size: 13px;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .bg-blur {
+            position: fixed;
+            top: -20%; left: -20%; right: -20%; bottom: -20%;
+            background-image: var(--bg-img, none);
+            background-size: cover;
+            background-position: center;
+            filter: blur(50px) saturate(200%) brightness(0.4);
+            z-index: -10;
+            transition: background-image 0.5s ease;
+            pointer-events: none;
+        }
+
+        .container { max-width: 450px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 8px; }
+        .logo { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .subtitle { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Player Preview */
+        .player-preview {
+            background: rgba(20, 20, 25, 0.4);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 16px;
+            display: flex; gap: 16px; align-items: center;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.4);
+        }
+        .art-box {
+            position: relative;
+            width: 72px; height: 72px; background: #111; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            flex-shrink: 0;
+        }
+        .art-box::before {
+            content: "";
+            display: var(--ambilight-display, block);
+            position: absolute;
+            top: -20%; left: -20%; right: -20%; bottom: -20%;
+            background-image: var(--bg-img, none);
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) saturate(2);
+            opacity: 0.8;
+            z-index: 0;
+            border-radius: 50%;
+            animation: haloSpin 10s linear infinite;
+        }
+        @keyframes haloSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .art-box img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+        .art-box .placeholder { position: relative; z-index: 2; font-size: 30px; opacity: 0.3; }
+        .track-info { flex: 1; min-width: 0; }
+        .title { font-weight: 700; font-size: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        .artist { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 8px; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+        
+        .player-controls { display: flex; gap: 16px; align-items: center; }
+        .ctrl-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.05); color: #fff; cursor: pointer; font-size: 14px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .ctrl-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        .ctrl-btn.play { background: #fff; color: #000; width: 44px; height: 44px; font-size: 18px; }
+        .ctrl-btn.play:hover { background: #eee; }
+
+        /* Sections */
+        .section-title {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            color: rgba(255,255,255,0.8); margin: 8px 0 4px; letter-spacing: 0.5px;
+        }
+
+        /* Controls */
+        .control-group {
+            background: rgba(30, 30, 35, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .row:last-child { margin-bottom: 0; }
+        
+        label { font-size: 12px; color: rgba(255,255,255,0.9); flex: 1; }
+
+        select, input[type="text"], input[type="number"] {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            width: 140px;
+            outline: none;
+        }
+
+        input[type="range"] { -webkit-appearance: none; width: 120px; background: transparent; margin: 0 10px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #fff; cursor: pointer; margin-top: -6px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+        .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex: 0 0 36px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #fff; }
+        input:checked + .slider:before { transform: translateX(16px); background-color: #000; }
+
+        .btn-primary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: rgba(255,255,255,0.2); }
+
+
+    </style>
+</head>
+<body>
+    <div class="bg-blur"></div>
+    <div class="container">
+        <div class="header">
+            <div class="logo">MUSIC DOCK</div>
+            <div class="subtitle">OBS MEDIA PLAYER</div>
+        </div>
+
+        <div class="section-title">ИСТОЧНИК МУЗЫКИ</div>
+        <select id="sourceSelect" class="control-group" style="width:100%; padding: 10px 14px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; cursor: pointer; font-size: 13px;">
+            <option value="auto" style="background: #161b22;">Автоматически (Текущий источник)</option>
+            <option value="spotify" style="background: #161b22;">Spotify (Требует обновы плагина)</option>
+            <option value="browser" style="background: #161b22;">Браузер (Требует обновы плагина)</option>
+        </select>
+
+        <div class="player-preview control-group">
+            <div class="art-box" id="previewArt">🎵</div>
+            <div class="track-info">
+                <div class="title" id="previewTitle">Нет названия</div>
+                <div class="artist" id="previewArtist">Альбом: —</div>
+                <div style="font-size:9px; color:#ff7b72; border:1px solid #ff7b72; display:inline-block; padding:2px 6px; border-radius:10px; margin-top:4px;" id="previewStatus">PAUSED</div>
+            </div>
+            <div class="player-controls">
+                <button class="ctrl-btn" onclick="window._ctrl('prev')"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                <button class="ctrl-btn play" id="btnPlay" onclick="window._ctrl('playpause')"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+                <button class="ctrl-btn" onclick="window._ctrl('next')"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+            </div>
+        </div>
+
+        <div class="section-title">НАСТРОЙКА СКИНА</div>
+        <div class="control-group">
+            <div class="row">
+                <label>Цвет подложки</label>
+                <input type="range" id="bgColorSlider" min="0" max="360" value="220">
+                <input type="color" id="bgColor" class="color-preview" value="#161b22">
+            </div>
+            <div class="row">
+                <label>Прозрачность</label>
+                <input type="range" id="opacity" min="0" max="100" value="80">
+                <span style="font-size:11px; width:30px; text-align:right;" id="opacityVal">80%</span>
+            </div>
+            <div class="row">
+                <label>Яркость</label>
+                <input type="range" id="brightness" min="0" max="100" value="100">
+                <span style="font-size:11px; width:30px; text-align:right;" id="brightnessVal">100%</span>
+            </div>
+
+            <div class="row">
+                <label>Ambilight свечение</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ambilightBtn">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <label>Скругление (Радиус)</label>
+                <input type="range" id="borderRadius" min="0" max="40" value="14">
+                <span style="font-size:11px; width:30px; text-align:right;" id="borderRadiusVal">14px</span>
+            </div>
+        </div>
+
+        <div class="section-title">АВТОПОКАЗ PLAYER</div>
+        <div class="control-group">
+            <div class="row">
+                <label>Автопоказ</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoShowBtn">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <label>Показывать</label>
+                <select id="showDuration" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px; outline:none;">
+                    <option value="3" style="background: #161b22;">3 секунд</option>
+                    <option value="5" selected style="background: #161b22;">5 секунд</option>
+                    <option value="10" style="background: #161b22;">10 секунд</option>
+                    <option value="0" style="background: #161b22;">Всегда (0)</option>
+                </select>
+            </div>
+            <div class="row">
+                <label>Появление</label>
+                <select id="animationDir" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px; outline:none;">
+                    <option value="left" style="background: #161b22;">&lt;-- Слева</option>
+                    <option value="right" style="background: #161b22;">--&gt; Справа</option>
+                    <option value="bottom" style="background: #161b22;">^ Снизу</option>
+                </select>
+            </div>
+            <div class="row">
+                <label>Анимация при смене</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="trackChangeAnimBtn">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button class="btn-primary" style="width:100%; margin-top:10px; background: rgba(255,255,255,0.05);" onclick="testOverlay()">ПОКАЗАТЬ ДЛЯ ТЕСТА</button>
+        </div>
+
+        <button class="btn-primary" onclick="addBrowserSource()" style="box-shadow: 0 4px 15px rgba(0,0,0,0.3);">+ ДОБАВИТЬ PLAYER В OBS</button>
+        <div style="text-align:center; font-size:10px; color:#666; margin-top:8px;">
+            ⓘ Копирует ссылку для Browser Source или пытается добавить автоматически
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        // State
+        let settings = {
+            source: 'auto', skin: '02', bgColor: '#161b22', opacity: 80, brightness: 100,
+            barColor: '#ff4757', autoShow: true, showDuration: 5, animationDir: 'left',
+            blur: false, blurStrength: 7, blurSource: ''
+        };
+        let availableApps = [];
+
+        // Elements
+        const els = {
+            source: document.getElementById('sourceSelect'),
+            bgColor: document.getElementById('bgColor'),
+            opacity: document.getElementById('opacity'),
+            opacityVal: document.getElementById('opacityVal'),
+            brightness: document.getElementById('brightness'),
+            brightnessVal: document.getElementById('brightnessVal'),
+            autoShowBtn: document.getElementById('autoShowBtn'),
+            showDuration: document.getElementById('showDuration'),
+            animationDir: document.getElementById('animationDir'),
+            
+            pArt: document.getElementById('previewArt'),
+            pTitle: document.getElementById('previewTitle'),
+            pArtist: document.getElementById('previewArtist'),
+            pStatus: document.getElementById('previewStatus'),
+            ambilightBtn: document.getElementById('ambilightBtn'),
+            borderRadius: document.getElementById('borderRadius'),
+            borderRadiusVal: document.getElementById('borderRadiusVal'),
+            trackChangeAnimBtn: document.getElementById('trackChangeAnimBtn')
+        };
+
+        // Load Initial Settings
+        fetch('/api/settings').then(r => r.json()).then(data => {
+            Object.assign(settings, data);
+            if (settings.ambilight === undefined) settings.ambilight = true;
+            if (settings.borderRadius === undefined) settings.borderRadius = 14;
+            if (settings.trackChangeAnim === undefined) settings.trackChangeAnim = true;
+            updateUIFromSettings();
+        });
+
+        function updateUIFromSettings() {
+            els.source.value = settings.source || 'auto';
+            els.bgColor.value = settings.bgColor;
+            els.opacity.value = settings.opacity;
+            els.opacityVal.textContent = settings.opacity + '%';
+            els.brightness.value = settings.brightness;
+            els.brightnessVal.textContent = settings.brightness + '%';
+            els.autoShowBtn.checked = settings.autoShow;
+            els.showDuration.value = settings.showDuration;
+            els.animationDir.value = settings.animationDir;
+            els.ambilightBtn.checked = settings.ambilight;
+            document.documentElement.style.setProperty('--ambilight-display', settings.ambilight ? 'block' : 'none');
+            els.borderRadius.value = settings.borderRadius;
+            els.borderRadiusVal.textContent = settings.borderRadius + 'px';
+            els.trackChangeAnimBtn.checked = settings.trackChangeAnim;
+        }
+
+        // Save Settings
+        function saveSettings() {
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            });
+        }
+
+        // Listeners
+        els.source.addEventListener('change', e => { settings.source = e.target.value; saveSettings(); });
+        els.bgColor.addEventListener('input', e => { settings.bgColor = e.target.value; saveSettings(); });
+        els.opacity.addEventListener('input', e => { els.opacityVal.textContent = e.target.value + '%'; settings.opacity = parseInt(e.target.value); saveSettings(); });
+        els.brightness.addEventListener('input', e => { els.brightnessVal.textContent = e.target.value + '%'; settings.brightness = parseInt(e.target.value); saveSettings(); });
+        els.showDuration.addEventListener('change', e => { settings.showDuration = parseInt(e.target.value); saveSettings(); });
+        els.animationDir.addEventListener('change', e => { settings.animationDir = e.target.value; saveSettings(); });
+        els.borderRadius.addEventListener('input', e => { els.borderRadiusVal.textContent = e.target.value + 'px'; settings.borderRadius = parseInt(e.target.value); saveSettings(); });
+
+        els.ambilightBtn.addEventListener('change', (e) => {
+            settings.ambilight = e.target.checked;
+            document.documentElement.style.setProperty('--ambilight-display', settings.ambilight ? 'block' : 'none');
+            saveSettings();
+        });
+
+        els.autoShowBtn.addEventListener('change', (e) => {
+            settings.autoShow = e.target.checked;
+            saveSettings();
+        });
+
+        els.trackChangeAnimBtn.addEventListener('change', (e) => {
+            settings.trackChangeAnim = e.target.checked;
+            saveSettings();
+        });
+
+        // HSL to Hex helper for range sliders
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+
+        document.getElementById('bgColorSlider').addEventListener('input', (e) => {
+            const hex = hslToHex(e.target.value, 50, 20);
+            els.bgColor.value = hex;
+            settings.bgColor = hex; saveSettings();
+        });
+
+
+
+        // Media Info Updater
+        function updateSourcesList(apps) {
+            if(!apps) return;
+            const currentVal = els.source.value;
+            let options = '<option value="auto" style="background: #161b22;">Автоматически (Текущий источник)</option>';
+            apps.forEach(app => {
+                options += `<option value="${app}" style="background: #161b22;">${app}</option>`;
+            });
+            els.source.innerHTML = options;
+            els.source.value = apps.includes(currentVal) ? currentVal : 'auto';
+        }
+
+        async function updateMedia() {
+            try {
+                const resp = await fetch('/api/media');
+                const data = await resp.json();
+
+                if (data.availableApps && data.availableApps.join(',') !== availableApps.join(',')) {
+                    availableApps = data.availableApps;
+                    updateSourcesList(availableApps);
+                }
+
+                els.pTitle.textContent = data.title || 'Нет названия';
+                els.pArtist.textContent = data.artist || (data.app || '—');
+                
+                if(data.status === 'Playing') {
+                    els.pStatus.textContent = 'PLAYING';
+                    els.pStatus.style.color = '#39d353';
+                    els.pStatus.style.borderColor = '#39d353';
+                    document.getElementById('btnPlay').innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                } else {
+                    els.pStatus.textContent = 'PAUSED';
+                    els.pStatus.style.color = '#ff7b72';
+                    els.pStatus.style.borderColor = '#ff7b72';
+                    document.getElementById('btnPlay').innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                }
+
+                if (data.albumArt) {
+                    els.pArt.innerHTML = `<img src="data:image/jpeg;base64,${data.albumArt}">`;
+                    document.documentElement.style.setProperty('--bg-img', `url('data:image/jpeg;base64,${data.albumArt}')`);
+                } else {
+                    let q = data.title;
+                    if (data.artist) q = data.artist + ' ' + data.title;
+                    if (q) {
+                        fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=1`)
+                        .then(r => r.json())
+                        .then(j => {
+                            if (j.results && j.results.length > 0 && !data.albumArt) {
+                                els.pArt.innerHTML = `<img src="${j.results[0].artworkUrl100}">`;
+                                document.documentElement.style.setProperty('--bg-img', `url('${j.results[0].artworkUrl100.replace("100x100bb", "600x600bb")}')`);
+                            }
+                        }).catch(() => {});
+                    }
+                    if (!els.pArt.innerHTML.includes('<img')) {
+                        els.pArt.innerHTML = '🎵';
+                        document.documentElement.style.setProperty('--bg-img', 'none');
+                    }
+                }
+
+            } catch(e) {}
+        }
+        setInterval(updateMedia, 300);
+        updateMedia();
+
+        window._ctrl = async function(action) {
+            await fetch('/api/control/' + action);
+            setTimeout(updateMedia, 200);
+        };
+
+        window.testOverlay = function() {
+            // Sends a test signal to the overlay via a dedicated endpoint or just mock track change
+            fetch('/api/settings', {method: 'POST', body: JSON.stringify({...settings, _testTrigger: Date.now()})});
+        };
+
+        window.addBrowserSource = function() {
+            const url = `http://127.0.0.1:18789/overlay`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert(`Ссылка на Overlay скопирована в буфер обмена!\n\n${url}\n\nДобавьте её как "Браузер" в источниках OBS.`);
+            }).catch(() => {
+                alert(`Добавьте источник "Браузер" с URL:\n${url}`);
+            });
+        };
+    })();
+    </script>
+</body>
+</html>

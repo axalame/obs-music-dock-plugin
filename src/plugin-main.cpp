@@ -181,6 +181,8 @@ void SendMediaCommand(const std::string& cmd) {
     } catch (...) {}
 }
 
+std::string g_data_path;
+
 // Server Worker
 void ServerWorker() {
     // API: Get Media
@@ -215,9 +217,10 @@ void ServerWorker() {
         res.set_header("Access-Control-Allow-Origin", "*");
     });
 
-    // Serve static HTML from Desktop directory matching previous setup
-    // This allows index.html and overlay.html to be served automatically
-    g_server.set_mount_point("/", "C:\\Users\\User\\Desktop\\3232\\obs-music-dock");
+    // Serve static HTML from the dynamic plugin data directory
+    if (!g_data_path.empty()) {
+        g_server.set_mount_point("/", g_data_path);
+    }
     
     g_server.listen("127.0.0.1", 18789);
 }
@@ -227,7 +230,13 @@ bool obs_module_load(void)
     // Initialize default settings so HTML doesn't break
     g_settings = json::parse(R"({"source": "auto", "skin": "02", "bgColor": "#161b22", "opacity": 80, "brightness": 100, "barColor": "#ff4757", "autoShow": true, "showDuration": 5, "animationDir": "left", "ambilight": true, "borderRadius": 14})");
 
-	obs_log(LOG_INFO, "obs-music-dock-plugin loaded successfully. Starting server...");
+    char* path = obs_module_file("");
+    if (path) {
+        g_data_path = path;
+        bfree(path);
+    }
+
+	obs_log(LOG_INFO, "obs-music-dock-plugin loaded successfully. Data path: %s", g_data_path.c_str());
 	
 	g_media_poll_thread = std::thread(MediaPollWorker);
 	g_server_thread = std::thread(ServerWorker);
