@@ -77,16 +77,18 @@ void MediaPollWorker() {
                     
                     auto thumb = properties.Thumbnail();
                     if (thumb) {
-                        auto stream = thumb.OpenReadAsync().get();
-                        if (stream) {
-                            uint32_t size = (uint32_t)stream.Size();
-                            Buffer buffer(size);
-                            stream.ReadAsync(buffer, size, InputStreamOptions::None).get();
-                            
-                            std::vector<uint8_t> bytes(buffer.Length());
-                            memcpy(bytes.data(), buffer.data(), buffer.Length());
-                            newState["albumArt"] = EncodeBase64(bytes);
-                        }
+                            auto stream = thumb.OpenReadAsync().get();
+                            if (stream) {
+                                uint32_t size = (uint32_t)stream.Size();
+                                Buffer buffer(size);
+                                stream.ReadAsync(buffer, size, InputStreamOptions::None).get();
+                                
+                                auto reader = DataReader::FromBuffer(buffer);
+                                std::vector<uint8_t> bytes(buffer.Length());
+                                reader.ReadBytes(bytes);
+                                
+                                newState["albumArt"] = EncodeBase64(bytes);
+                            }
                     }
                 }
                 
