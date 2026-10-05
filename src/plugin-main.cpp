@@ -1,4 +1,5 @@
 #include <obs-module.h>
+#include <util/bmem.h>
 #include <plugin-support.h>
 
 // Disable some warnings for external headers
