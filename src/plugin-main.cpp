@@ -4,7 +4,7 @@
 // Disable some warnings for external headers
 #pragma warning(push)
 #pragma warning(disable: 4244 4267)
-#define CPPHTTPLIB_OPENSSL_SUPPORT
+#define NOMINMAX
 #include "httplib.h"
 #include "json.hpp"
 #pragma warning(pop)
@@ -19,6 +19,9 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Media.Control.h>
 #include <winrt/Windows.Storage.Streams.h>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <wincrypt.h>
 
