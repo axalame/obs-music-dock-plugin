@@ -1,10 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Music Overlay</title>
     <style>
         :root {
+        --widget-scale: 1.0;
+        --widget-width: 420px;
             --bg-color: #161b22;
             --bar-color: #ff4757;
             --opacity: 0.8;
@@ -16,6 +18,10 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
+        transform-origin: bottom left;
+        transform: scale(var(--widget-scale));
+        width: var(--widget-width);
+        height: 100vh;
             background: transparent;
             font-family: 'Segoe UI', -apple-system, sans-serif;
             overflow: hidden;
@@ -25,6 +31,8 @@
         }
 
         .overlay {
+        width: var(--widget-width);
+        max-width: none;
             position: fixed;
             bottom: 24px;
             left: 24px;
@@ -63,11 +71,11 @@
             background-image: var(--ambilight-img, none);
             background-size: cover;
             background-position: center;
-            /* Усиленные, но точные цвета с большим размытием */
+            /* ╨г╤Б╨╕╨╗╨╡╨╜╨╜╤Л╨╡, ╨╜╨╛ ╤В╨╛╤З╨╜╤Л╨╡ ╤Ж╨▓╨╡╤В╨░ ╤Б ╨▒╨╛╨╗╤М╤И╨╕╨╝ ╤А╨░╨╖╨╝╤Л╤В╨╕╨╡╨╝ */
             filter: blur(25px) saturate(2.5) brightness(1.2);
             opacity: 0.95;
             z-index: 0;
-            border-radius: 50%; /* Круглая форма для бесшовного вращения */
+            border-radius: 50%; /* ╨Ъ╤А╤Г╨│╨╗╨░╤П ╤Д╨╛╤А╨╝╨░ ╨┤╨╗╤П ╨▒╨╡╤Б╤И╨╛╨▓╨╜╨╛╨│╨╛ ╨▓╤А╨░╤Й╨╡╨╜╨╕╤П */
             transition: background-image 0.5s ease;
             pointer-events: none;
             animation: haloSpin 10s linear infinite;
@@ -107,10 +115,12 @@
             border-radius: 2px; transition: width 1.2s linear; width: 0%;
         }
 
-        /* ─── AURA GLASS STYLE (UNIFIED) ─── */
+        /* тФАтФАтФА AURA GLASS STYLE (UNIFIED) тФАтФАтФА */
         .overlay {
+        width: var(--widget-width);
+        max-width: none;
             /* Basic Aura Box */
-            background: var(--bg-rgba);
+            background: var(--bg-rgba, rgba(18, 18, 20, 0.4));
             backdrop-filter: blur(50px) saturate(200%);
             -webkit-backdrop-filter: blur(50px) saturate(200%);
             border-radius: var(--border-radius, 32px);
@@ -151,25 +161,6 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
     
-        /* THEMES */
-        :root {
-            --widget-scale: 1.0;
-            --widget-width: 420px;
-        }
-        body {
-            transform-origin: bottom left;
-            transform: scale(var(--widget-scale));
-            width: var(--widget-width);
-            height: 100vh;
-        }
-        
-        .overlay {
-            width: var(--widget-width);
-            max-width: none;
-        }
-
-        /* Aura (Default) - existing styles apply */
-
         /* Vinyl Record */
         .overlay.theme-vinyl {
             background: var(--bg-rgba);
@@ -229,7 +220,7 @@
 </head>
 <body>
     <div class="overlay hidden" id="overlay">
-        <div class="art" id="art"><div class="placeholder">🎵</div></div>
+        <div class="art" id="art"><div class="placeholder">ЁЯО╡</div></div>
         <div class="info">
             <div class="title" id="title"></div>
             <div class="artist" id="artist"></div>
@@ -288,9 +279,11 @@
             
             root.style.setProperty('--bg-rgba', 
 `rgba(${r}, ${g}, ${b}, ${opacity})`);
+            
             root.style.setProperty('--bar-color', settings.barColor || '#ff4757');
-            root.style.setProperty('--brightness', (settings.brightness !== undefined ? settings.brightness : 100) / 100);
+            root.style.setProperty('--brightness', (settings.brightness ?? 100) / 100);
 
+            // Dynamic settings
             if (settings.ambilight === false) {
                 artEl.style.setProperty('--ambilight-display', 'none');
             } else {
@@ -302,6 +295,7 @@
                 root.style.setProperty('--border-radius', '14px');
             }
 
+            // Handle animation direction
             let hiddenTransform = 'translateY(120px) scale(0.95)';
             if (settings.animationDir === 'left') hiddenTransform = 'translateX(-300px) scale(0.95)';
             if (settings.animationDir === 'right') {
@@ -309,11 +303,104 @@
                 overlay.style.right = '24px';
                 hiddenTransform = 'translateX(300px) scale(0.95)';
             } else {
-                overlay.style.right = 'auto';
                 overlay.style.left = '24px';
+                overlay.style.right = 'auto';
             }
             root.style.setProperty('--transform-hidden', hiddenTransform);
+            
+            // Test trigger
+            if (settings._testTrigger && settings._testTrigger !== lastTestTrigger) {
+                lastTestTrigger = settings._testTrigger;
+                showTemporarily(settings.showDuration);
+            }
         }
+
+        function showTemporarily(duration) {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('visible');
+            clearTimeout(hideTimer);
+            if (duration > 0) {
+                hideTimer = setTimeout(() => {
+                    overlay.classList.remove('visible');
+                    overlay.classList.add('hidden');
+                }, duration * 1000);
+            }
+        }
+
+        let isAnimating = false;
+
+        function applyDomData(data, trackKey, isPlaying, settings, trackChanged) {
+            lastTrack = trackKey;
+            
+            if(settings) {
+                if(settings.theme) {
+                    overlay.classList.remove('theme-aura', 'theme-vinyl', 'theme-minimal', 'theme-pill');
+                    if(settings.theme !== 'aura') {
+                        overlay.classList.add('theme-' + settings.theme);
+                    }
+                }
+                if(settings.scale !== undefined) {
+                    document.documentElement.style.setProperty('--widget-scale', settings.scale);
+                }
+                if(settings.width !== undefined) {
+                    document.documentElement.style.setProperty('--widget-width', settings.width + 'px');
+                }
+            }
+
+            
+            if (trackChanged) {
+                // CLEAR OLD ART INSTANTLY
+                artEl.innerHTML = '<div class="placeholder">ЁЯО╡</div>';
+                artEl.style.setProperty('--ambilight-img', 'none');
+                
+                if (isPlaying && settings.autoShow) {
+                    showTemporarily(settings.showDuration);
+                }
+            } else if (isPlaying && settings.autoShow && overlay.classList.contains('hidden')) {
+                // Keep showing if playing
+            }
+            
+            if (!settings.autoShow && isPlaying) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('visible');
+            }
+
+            titleEl.textContent = data.title;
+            artistEl.textContent = data.artist || '';
+
+            // Artwork logic
+            let newArtHtml = '<div class="placeholder">ЁЯО╡</div>';
+            let ambilightUrl = 'none';
+
+            if (data.albumArt) {
+                const imgUrl = `data:image/jpeg;base64,${data.albumArt}`;
+                newArtHtml = `<img src="${imgUrl}">`;
+                ambilightUrl = `url('${imgUrl}')`;
+            } else {
+                getFallbackArt(data.title, data.artist).then(fallbackUrl => {
+                    if (fallbackUrl && trackKey === lastTrack) {
+                        artEl.innerHTML = `<img src="${fallbackUrl}">`;
+                        artEl.style.setProperty('--ambilight-img', `url('${fallbackUrl}')`);
+                    }
+                });
+            }
+            if (data.albumArt || !artEl.innerHTML.includes('<img')) {
+                 artEl.innerHTML = newArtHtml;
+                 artEl.style.setProperty('--ambilight-img', ambilightUrl);
+            }
+
+            if (!settings.autoShow) {
+                clearTimeout(hideTimer);
+                if (isPlaying) {
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('visible');
+                } else {
+                    overlay.classList.remove('visible');
+                    overlay.classList.add('hidden');
+                }
+            }
+        }
+
         async function update() {
             if (isAnimating) return;
             try {
