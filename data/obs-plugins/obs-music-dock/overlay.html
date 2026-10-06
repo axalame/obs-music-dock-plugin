@@ -287,7 +287,7 @@
             let b = parseInt(bgHex.substring(4,6), 16) || 34;
             
             root.style.setProperty('--bg-rgba', 
-gba(, , , ));
+`rgba(${r}, ${g}, ${b}, ${opacity})`);
             root.style.setProperty('--bar-color', settings.barColor || '#ff4757');
             root.style.setProperty('--brightness', (settings.brightness !== undefined ? settings.brightness : 100) / 100);
 
