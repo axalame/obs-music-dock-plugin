@@ -14,8 +14,12 @@
 ## Установка 🚀
 1. Скачайте свежий `.zip` архив со страницы [Releases](https://github.com/axalame/obs-music-dock-plugin/releases).
 2. Закройте OBS Studio.
-3. Откройте скачанный архив и скопируйте папки `bin` и `data` в главную папку вашего OBS (обычно это `C:\Program Files\obs-studio\`). 
-4. Подтвердите слияние папок и замену файлов, если потребуется.
+3. Откройте скачанный архив и распределите файлы по папкам OBS (обычно OBS установлен в `C:\Program Files\obs-studio\`):
+   * Файл **`obs-music-dock.dll`** (лежит в архиве в папке `bin\64bit`) скопируйте по пути:
+     👉 `C:\Program Files\obs-studio\obs-plugins\64bit\`
+   * Файлы дизайна **`index.html`** и **`overlay.html`** скопируйте по пути:
+     👉 `C:\Program Files\obs-studio\data\obs-plugins\obs-music-dock\` 
+     *(если папки `obs-music-dock` там нет — просто создайте её)*.
 
 ## Настройка в OBS ⚙️
 После установки плагина нужно добавить 2 элемента: панель управления и сам виджет на стрим.
