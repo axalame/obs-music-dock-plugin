@@ -311,7 +311,9 @@
 
         // Load Initial Settings
         fetch('/api/settings').then(r => r.json()).then(data => {
-            Object.assign(settings, data);
+            if (Object.keys(data).length > 0) {
+                Object.assign(settings, data);
+            }
             if (settings.ambilight === undefined) settings.ambilight = true;
             if (settings.borderRadius === undefined) settings.borderRadius = 14;
             if (settings.trackChangeAnim === undefined) settings.trackChangeAnim = true;

@@ -36,7 +36,7 @@
         }
 
         .overlay.visible {
-            opacity: var(--opacity);
+            opacity: 1;
             transform: var(--transform-visible);
         }
 
@@ -110,7 +110,7 @@
         /* ─── AURA GLASS STYLE (UNIFIED) ─── */
         .overlay {
             /* Basic Aura Box */
-            background: rgba(18, 18, 20, 0.4);
+            background: var(--bg-rgba);
             backdrop-filter: blur(50px) saturate(200%);
             -webkit-backdrop-filter: blur(50px) saturate(200%);
             border-radius: var(--border-radius, 32px);
@@ -126,7 +126,7 @@
         .art { 
             width: 72px; 
             height: 72px; 
-            border-radius: calc(var(--border-radius, 32px) - 8px); 
+            border-radius: var(--border-radius, 24px); 
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); 
             background: #111;
         }
@@ -172,8 +172,8 @@
 
         /* Vinyl Record */
         .overlay.theme-vinyl {
-            background: rgba(20, 20, 20, 0.7);
-            border-radius: 100px;
+            background: var(--bg-rgba);
+            border-radius: var(--border-radius, 100px);
             padding: 12px 30px 12px 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.05);
@@ -196,9 +196,9 @@
 
         /* Minimalist */
         .overlay.theme-minimal {
-            background: transparent;
-            box-shadow: none;
-            border-radius: 0;
+            background: var(--bg-rgba);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: var(--border-radius, 0px);
             border-left: 4px solid var(--bar-color);
             padding: 10px 20px;
             backdrop-filter: none;
@@ -214,8 +214,8 @@
 
         /* Compact Pill */
         .overlay.theme-pill {
-            background: #09090b;
-            border-radius: 50px;
+            background: var(--bg-rgba);
+            border-radius: var(--border-radius, 50px);
             padding: 8px 20px 8px 8px;
             display: flex; align-items: center;
             border: 1px solid rgba(255,255,255,0.1);
@@ -277,12 +277,20 @@
 
         function applySettings(settings) {
             const root = document.documentElement;
-            root.style.setProperty('--bg-color', settings.bgColor || '#161b22');
+            
+            let bgHex = settings.bgColor || '#161b22';
+            let opacity = (settings.opacity !== undefined ? settings.opacity : 80) / 100;
+            bgHex = bgHex.replace('#', '');
+            if (bgHex.length === 3) bgHex = bgHex.split('').map(x => x+x).join('');
+            let r = parseInt(bgHex.substring(0,2), 16) || 22;
+            let g = parseInt(bgHex.substring(2,4), 16) || 27;
+            let b = parseInt(bgHex.substring(4,6), 16) || 34;
+            
+            root.style.setProperty('--bg-rgba', 
+gba(, , , ));
             root.style.setProperty('--bar-color', settings.barColor || '#ff4757');
-            root.style.setProperty('--opacity', (settings.opacity ?? 80) / 100);
-            root.style.setProperty('--brightness', (settings.brightness ?? 100) / 100);
+            root.style.setProperty('--brightness', (settings.brightness !== undefined ? settings.brightness : 100) / 100);
 
-            // Dynamic settings
             if (settings.ambilight === false) {
                 artEl.style.setProperty('--ambilight-display', 'none');
             } else {
@@ -294,7 +302,6 @@
                 root.style.setProperty('--border-radius', '14px');
             }
 
-            // Handle animation direction
             let hiddenTransform = 'translateY(120px) scale(0.95)';
             if (settings.animationDir === 'left') hiddenTransform = 'translateX(-300px) scale(0.95)';
             if (settings.animationDir === 'right') {
@@ -302,83 +309,11 @@
                 overlay.style.right = '24px';
                 hiddenTransform = 'translateX(300px) scale(0.95)';
             } else {
-                overlay.style.left = '24px';
                 overlay.style.right = 'auto';
+                overlay.style.left = '24px';
             }
             root.style.setProperty('--transform-hidden', hiddenTransform);
-            
-            // Test trigger
-            if (settings._testTrigger && settings._testTrigger !== lastTestTrigger) {
-                lastTestTrigger = settings._testTrigger;
-                showTemporarily(settings.showDuration);
-            }
         }
-
-        function showTemporarily(duration) {
-            overlay.classList.remove('hidden');
-            overlay.classList.add('visible');
-            clearTimeout(hideTimer);
-            if (duration > 0) {
-                hideTimer = setTimeout(() => {
-                    overlay.classList.remove('visible');
-                    overlay.classList.add('hidden');
-                }, duration * 1000);
-            }
-        }
-
-        let isAnimating = false;
-
-        function applyDomData(data, trackKey, isPlaying, settings, trackChanged) {
-            lastTrack = trackKey;
-            
-            if (trackChanged) {
-                // CLEAR OLD ART INSTANTLY
-                artEl.innerHTML = '<div class="placeholder">🎵</div>';
-                artEl.style.setProperty('--ambilight-img', 'none');
-                
-                if (isPlaying && settings.autoShow) {
-                    showTemporarily(settings.showDuration);
-                }
-            } else if (isPlaying && settings.autoShow && overlay.classList.contains('hidden')) {
-                // Keep showing if playing
-            }
-
-            titleEl.textContent = data.title;
-            artistEl.textContent = data.artist || '';
-
-            // Artwork logic
-            let newArtHtml = '<div class="placeholder">🎵</div>';
-            let ambilightUrl = 'none';
-
-            if (data.albumArt) {
-                const imgUrl = `data:image/jpeg;base64,${data.albumArt}`;
-                newArtHtml = `<img src="${imgUrl}">`;
-                ambilightUrl = `url('${imgUrl}')`;
-            } else {
-                getFallbackArt(data.title, data.artist).then(fallbackUrl => {
-                    if (fallbackUrl && trackKey === lastTrack) {
-                        artEl.innerHTML = `<img src="${fallbackUrl}">`;
-                        artEl.style.setProperty('--ambilight-img', `url('${fallbackUrl}')`);
-                    }
-                });
-            }
-            if (data.albumArt || !artEl.innerHTML.includes('<img')) {
-                 artEl.innerHTML = newArtHtml;
-                 artEl.style.setProperty('--ambilight-img', ambilightUrl);
-            }
-
-            if (!settings.autoShow) {
-                clearTimeout(hideTimer);
-                if (isPlaying) {
-                    overlay.classList.remove('hidden');
-                    overlay.classList.add('visible');
-                } else {
-                    overlay.classList.remove('visible');
-                    overlay.classList.add('hidden');
-                }
-            }
-        }
-
         async function update() {
             if (isAnimating) return;
             try {

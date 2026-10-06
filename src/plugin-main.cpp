@@ -44,6 +44,36 @@ std::mutex g_media_mutex;
 json g_media_state = json::object();
 json g_settings = json::object();
 
+void LoadSettings() {
+    char* path = obs_module_config_path("settings.json");
+    if (path) {
+        std::ifstream file(path);
+        if (file.is_open()) {
+            try {
+                g_settings = json::parse(file);
+            } catch (...) {}
+        }
+        bfree(path);
+    }
+}
+
+void SaveSettings() {
+    char* dir = obs_module_config_path("");
+    if (dir) {
+        os_mkdirs(dir);
+        bfree(dir);
+    }
+    char* path = obs_module_config_path("settings.json");
+    if (path) {
+        std::ofstream file(path);
+        if (file.is_open()) {
+            file << g_settings.dump();
+        }
+        bfree(path);
+    }
+}
+
+
 // Helper: base64 encode
 std::string EncodeBase64(const std::vector<uint8_t>& data) {
     if (data.empty()) return "";
@@ -203,6 +233,7 @@ void ServerWorker() {
     g_server.Post("/api/settings", [](const httplib::Request& req, httplib::Response& res) {
         try {
             g_settings = json::parse(req.body);
+            SaveSettings();
             res.set_content("{\"status\":\"ok\"}", "application/json");
         } catch (...) {
             res.status = 400;
@@ -229,7 +260,8 @@ void ServerWorker() {
 bool obs_module_load(void)
 {
     // Initialize default settings so HTML doesn't break
-    g_settings = json::parse(R"({"source": "auto", "skin": "02", "bgColor": "#161b22", "opacity": 80, "brightness": 100, "barColor": "#ff4757", "autoShow": true, "showDuration": 5, "animationDir": "left", "ambilight": true, "borderRadius": 14})");
+    g_settings = json::parse(R"({"source": "auto", "skin": "02", "bgColor": "#161b22", "opacity": 80, "brightness": 100, "barColor": "#ff4757", "autoShow": true, "showDuration": 5, "animationDir": "left", "ambilight": true, "borderRadius": 14});");
+    LoadSettings();
 
     char* path = obs_module_file("");
     if (path) {
