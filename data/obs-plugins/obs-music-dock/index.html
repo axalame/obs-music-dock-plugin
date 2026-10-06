@@ -178,6 +178,16 @@
 
         <div class="section-title">НАСТРОЙКА СКИНА</div>
         <div class="control-group">
+
+            <div class="row">
+                <label>Theme</label>
+                <select id="themeSelect" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px; outline:none; max-width: 140px;">
+                    <option value="aura" style="background: #161b22;">Aura Glass</option>
+                    <option value="vinyl" style="background: #161b22;">Vinyl Record</option>
+                    <option value="minimal" style="background: #161b22;">Minimalist</option>
+                    <option value="pill" style="background: #161b22;">Compact Pill</option>
+                </select>
+            
             <div class="row">
                 <label>Цвет подложки</label>
                 <input type="range" id="bgColorSlider" min="0" max="360" value="220">
@@ -208,17 +218,7 @@
             </div>
         </div>
 
-        <div class="section-title">THEME & SIZES</div>
-        <div class="control-group">
-            <div class="row">
-                <label>Theme</label>
-                <select id="themeSelect" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px; outline:none; max-width: 140px;">
-                    <option value="aura" style="background: #161b22;">Aura Glass</option>
-                    <option value="vinyl" style="background: #161b22;">Vinyl Record</option>
-                    <option value="minimal" style="background: #161b22;">Minimalist</option>
-                    <option value="pill" style="background: #161b22;">Compact Pill</option>
-                </select>
-            </div>
+        
             <div class="row">
                 <label>Scale</label>
                 <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1.0">
@@ -233,7 +233,7 @@
         <div class="section-title">АВТОПОКАЗ PLAYER</div>
         <div class="control-group">
             <div class="row">
-                <label>Автопоказ</label>
+                <label>Авто-скрытие</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="autoShowBtn">
                     <span class="slider"></span>
@@ -352,7 +352,25 @@
         }
 
         // Listeners
-        els.theme.addEventListener('change', e => { settings.theme = e.target.value; saveSettings(); });
+        els.theme.addEventListener('change', e => { 
+            settings.theme = e.target.value; 
+            const presets = {
+                'aura': { bgColor: '#161b22', opacity: 80, borderRadius: 14, scale: 1.0, width: 400 },
+                'vinyl': { bgColor: '#141414', opacity: 70, borderRadius: 100, scale: 1.0, width: 420 },
+                'minimal': { bgColor: '#000000', opacity: 0, borderRadius: 0, scale: 1.0, width: 380 },
+                'pill': { bgColor: '#09090b', opacity: 100, borderRadius: 50, scale: 1.0, width: 300 }
+            };
+            const p = presets[settings.theme];
+            if(p) {
+                settings.bgColor = p.bgColor;
+                settings.opacity = p.opacity;
+                settings.borderRadius = p.borderRadius;
+                settings.scale = p.scale;
+                settings.width = p.width;
+                updateUIFromSettings(); // Updates the sliders in the UI
+            }
+            saveSettings(); 
+        });
         els.scale.addEventListener('input', e => { els.scaleVal.textContent = e.target.value; settings.scale = parseFloat(e.target.value); saveSettings(); });
         els.width.addEventListener('input', e => { els.widthVal.textContent = e.target.value + 'px'; settings.width = parseInt(e.target.value); saveSettings(); });
         els.source.addEventListener('change', e => { settings.source = e.target.value; saveSettings(); });
