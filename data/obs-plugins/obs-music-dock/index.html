@@ -275,7 +275,7 @@
     <script>
     (function() {
         // State
-        let settings = { theme: "aura", scale: 1.0, width: 400, theme: "aura", scale: 1.0, width: 400,
+        let settings = { theme: "aura", scale: 1.0, width: 400,
             source: 'auto', skin: '02', bgColor: '#161b22', opacity: 80, brightness: 100,
             barColor: '#ff4757', autoShow: true, showDuration: 5, animationDir: 'left',
             blur: false, blurStrength: 7, blurSource: ''
@@ -284,6 +284,11 @@
 
         // Elements
         const els = {
+            theme: document.getElementById('themeSelect'),
+            scale: document.getElementById('scaleSlider'),
+            scaleVal: document.getElementById('scaleVal'),
+            width: document.getElementById('widthSlider'),
+            widthVal: document.getElementById('widthVal'),
             source: document.getElementById('sourceSelect'),
             bgColor: document.getElementById('bgColor'),
             opacity: document.getElementById('opacity'),
@@ -314,9 +319,14 @@
         });
 
         function updateUIFromSettings() {
+            els.theme.value = settings.theme || 'aura';
+            els.scale.value = settings.scale || 1.0;
+            els.scaleVal.textContent = (settings.scale || 1.0);
+            els.width.value = settings.width || 400;
+            els.widthVal.textContent = (settings.width || 400) + 'px';
             els.source.value = settings.source || 'auto';
             els.bgColor.value = settings.bgColor;
-            if(settings.theme) els.theme.value = settings.theme; if(settings.scale){els.scale.value = settings.scale; els.scaleVal.textContent = settings.scale;} if(settings.width){els.width.value = settings.width; els.widthVal.textContent = settings.width + 'px';} if(settings.theme) els.theme.value = settings.theme; if(settings.scale){els.scale.value = settings.scale; els.scaleVal.textContent = settings.scale;} if(settings.width){els.width.value = settings.width; els.widthVal.textContent = settings.width + 'px';} els.opacity.value = settings.opacity;
+            els.opacity.value = settings.opacity;
             els.opacityVal.textContent = settings.opacity + '%';
             els.brightness.value = settings.brightness;
             els.brightnessVal.textContent = settings.brightness + '%';
@@ -340,9 +350,12 @@
         }
 
         // Listeners
+        els.theme.addEventListener('change', e => { settings.theme = e.target.value; saveSettings(); });
+        els.scale.addEventListener('input', e => { els.scaleVal.textContent = e.target.value; settings.scale = parseFloat(e.target.value); saveSettings(); });
+        els.width.addEventListener('input', e => { els.widthVal.textContent = e.target.value + 'px'; settings.width = parseInt(e.target.value); saveSettings(); });
         els.source.addEventListener('change', e => { settings.source = e.target.value; saveSettings(); });
         els.bgColor.addEventListener('input', e => { settings.bgColor = e.target.value; saveSettings(); });
-        els.theme.addEventListener('change', e => { settings.theme = e.target.value; saveSettings(); }); els.scale.addEventListener('input', e => { els.scaleVal.textContent = e.target.value; settings.scale = parseFloat(e.target.value); saveSettings(); }); els.width.addEventListener('input', e => { els.widthVal.textContent = e.target.value + 'px'; settings.width = parseInt(e.target.value); saveSettings(); }); els.theme.addEventListener('change', e => { settings.theme = e.target.value; saveSettings(); }); els.scale.addEventListener('input', e => { els.scaleVal.textContent = e.target.value; settings.scale = parseFloat(e.target.value); saveSettings(); }); els.width.addEventListener('input', e => { els.widthVal.textContent = e.target.value + 'px'; settings.width = parseInt(e.target.value); saveSettings(); }); els.opacity.addEventListener('input', e => { els.opacityVal.textContent = e.target.value + '%'; settings.opacity = parseInt(e.target.value); saveSettings(); });
+        els.opacity.addEventListener('input', e => { els.opacityVal.textContent = e.target.value + '%'; settings.opacity = parseInt(e.target.value); saveSettings(); });
         els.brightness.addEventListener('input', e => { els.brightnessVal.textContent = e.target.value + '%'; settings.brightness = parseInt(e.target.value); saveSettings(); });
         els.showDuration.addEventListener('change', e => { settings.showDuration = parseInt(e.target.value); saveSettings(); });
         els.animationDir.addEventListener('change', e => { settings.animationDir = e.target.value; saveSettings(); });
