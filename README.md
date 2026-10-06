@@ -1,59 +1,45 @@
-# OBS Plugin Template
+# OBS Music Dock 🎵
 
-## Introduction
+Красивый и современный плагин для OBS Studio, который отображает текущий воспроизводимый трек в стиле "Aura Glass" с размытием и эффектом Ambilight. 
 
-The plugin template is meant to be used as a starting point for OBS Studio plugin development. It includes:
+Работает нативно (на C++) без питона и лишних скриптов. Плагин перехватывает медиаданные прямо из Windows, поэтому поддерживает **Яндекс.Музыку, Spotify, браузеры, VK Музыку** и любые другие плееры.
 
-* Boilerplate plugin source code
-* A CMake project file
-* GitHub Actions workflows and repository actions
+## Особенности 🌟
+- **Эффект Aura Glass**: стильное стекло с размытием заднего фона и аккуратными тенями.
+- **Подсветка Ambilight**: фоновое свечение автоматически подстраивается под цвета обложки трека.
+- **Автопоказ и Скрытие**: виджет плавно выезжает, когда трек переключается или ставится на паузу, и прячется через заданное время.
+- **Плавные анимации**: переходы между треками сделаны без рывков (эффект схлопывания).
+- **Своя Док-Панель в OBS**: меняйте цвета, прозрачность, закругления и другие настройки прямо во время стрима без перезапуска!
 
-## Supported Build Environments
+## Установка 🚀
+1. Скачайте свежий `.zip` архив со страницы [Releases](https://github.com/axalame/obs-music-dock-plugin/releases).
+2. Закройте OBS Studio.
+3. Откройте скачанный архив и скопируйте папки `bin` и `data` в главную папку вашего OBS (обычно это `C:\Program Files\obs-studio\`). 
+4. Подтвердите слияние папок и замену файлов, если потребуется.
 
-| Platform  | Tool   |
-|-----------|--------|
-| Windows   | Visual Studio 17 2022 |
-| macOS     | XCode 16.0 |
-| Windows, macOS  | CMake 3.30.5 |
-| Ubuntu 24.04 | CMake 3.28.3 |
-| Ubuntu 24.04 | `ninja-build` |
-| Ubuntu 24.04 | `pkg-config`
-| Ubuntu 24.04 | `build-essential` |
+## Настройка в OBS ⚙️
+После установки плагина нужно добавить 2 элемента: панель управления и сам виджет на стрим.
 
-## Quick Start
+### 1. Добавляем Панель Управления (Dock)
+1. Откройте OBS.
+2. В верхнем меню выберите: `Док-панели` -> `Пользовательские доки браузера`.
+3. Введите название: `Music Settings` (или любое другое).
+4. В поле URL вставьте: `http://127.0.0.1:18789/index.html`
+5. Нажмите `Применить`. Появившуюся панель можно закрепить в любом удобном месте интерфейса OBS.
 
-An absolute bare-bones [Quick Start Guide](https://github.com/obsproject/obs-plugintemplate/wiki/Quick-Start-Guide) is available in the wiki.
+### 2. Добавляем виджет на стрим (Overlay)
+1. В нужной сцене OBS добавьте новый источник: `Браузер` (Browser Source).
+2. Назовите его `Music Player`.
+3. Снимите галочку "Локальный файл".
+4. В поле URL вставьте: `http://127.0.0.1:18789/overlay.html`
+5. Установите ширину `500` и высоту `250` (можно больше, виджет адаптируется).
+6. **ОБЯЗАТЕЛЬНО** поставьте галочку `Обновлять браузер, когда сцена становится активной`.
+7. Нажмите ОК.
 
-## Documentation
+## Решение проблем 🛠
+* **Виджет пропал:** Откройте панель настроек в OBS и нажмите "Показать для теста", либо переключите трек в плеере.
+* **Черный фон вместо размытия:** В настройках источника "Браузер" в OBS можно попробовать очистить кэш или включить аппаратное ускорение в расширенных настройках OBS.
+* **Не отображается Яндекс Музыка в списке источников:** Запустите воспроизведение в Яндексе, затем нажмите кнопку "Обновить" (ПКМ по панели настроек -> Обновить). Список источников собирает только те плееры, которые в данный момент работают.
 
-All documentation can be found in the [Plugin Template Wiki](https://github.com/obsproject/obs-plugintemplate/wiki).
-
-Suggested reading to get up and running:
-
-* [Getting started](https://github.com/obsproject/obs-plugintemplate/wiki/Getting-Started)
-* [Build system requirements](https://github.com/obsproject/obs-plugintemplate/wiki/Build-System-Requirements)
-* [Build system options](https://github.com/obsproject/obs-plugintemplate/wiki/CMake-Build-System-Options)
-
-## GitHub Actions & CI
-
-Default GitHub Actions workflows are available for the following repository actions:
-
-* `push`: Run for commits or tags pushed to `master` or `main` branches.
-* `pr-pull`: Run when a Pull Request has been pushed or synchronized.
-* `dispatch`: Run when triggered by the workflow dispatch in GitHub's user interface.
-* `build-project`: Builds the actual project and is triggered by other workflows.
-* `check-format`: Checks CMake and plugin source code formatting and is triggered by other workflows.
-
-The workflows make use of GitHub repository actions (contained in `.github/actions`) and build scripts (contained in `.github/scripts`) which are not needed for local development, but might need to be adjusted if additional/different steps are required to build the plugin.
-
-### Retrieving build artifacts
-
-Successful builds on GitHub Actions will produce build artifacts that can be downloaded for testing. These artifacts are commonly simple archives and will not contain package installers or installation programs.
-
-### Building a Release
-
-To create a release, an appropriately named tag needs to be pushed to the `main`/`master` branch using semantic versioning (e.g., `12.3.4`, `23.4.5-beta2`). A draft release will be created on the associated repository with generated installer packages or installation programs attached as release artifacts.
-
-## Signing and Notarizing on macOS
-
-Basic concepts of codesigning and notarization on macOS are explained in the correspodning [Wiki article](https://github.com/obsproject/obs-plugintemplate/wiki/Codesigning-On-macOS) which has a specific section for the [GitHub Actions setup](https://github.com/obsproject/obs-plugintemplate/wiki/Codesigning-On-macOS#setting-up-code-signing-for-github-actions).
+---
+*Плагин разработан эксклюзивно в рамках экспериментов с ИИ и C++.*
