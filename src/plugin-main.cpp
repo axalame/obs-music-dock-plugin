@@ -15,7 +15,7 @@
 #include <string>
 #include <mutex>
 #include <vector>
-#include <fstream>
+#include <fstream>\n#include <filesystem>
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -60,7 +60,7 @@ void LoadSettings() {
 void SaveSettings() {
     char* dir = obs_module_config_path("");
     if (dir) {
-        os_mkdirs(dir);
+        std::filesystem::create_directories(dir);
         bfree(dir);
     }
     char* path = obs_module_config_path("settings.json");
@@ -260,7 +260,7 @@ void ServerWorker() {
 bool obs_module_load(void)
 {
     // Initialize default settings so HTML doesn't break
-    g_settings = json::parse(R"({"source": "auto", "skin": "02", "bgColor": "#161b22", "opacity": 80, "brightness": 100, "barColor": "#ff4757", "autoShow": true, "showDuration": 5, "animationDir": "left", "ambilight": true, "borderRadius": 14});");
+    g_settings = json::parse(R"({"source": "auto", "skin": "02", "bgColor": "#161b22", "opacity": 80, "brightness": 100, "barColor": "#ff4757", "autoShow": true, "showDuration": 5, "animationDir": "left", "ambilight": true, "borderRadius": 14})");
     LoadSettings();
 
     char* path = obs_module_file("");
