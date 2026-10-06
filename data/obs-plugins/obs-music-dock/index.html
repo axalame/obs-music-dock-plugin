@@ -179,6 +179,7 @@
         <div class="section-title">НАСТРОЙКА СКИНА</div>
         <div class="control-group">
 
+        
             <div class="row">
                 <label>Theme</label>
                 <select id="themeSelect" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px; outline:none; max-width: 140px;">
@@ -187,7 +188,18 @@
                     <option value="minimal" style="background: #161b22;">Minimalist</option>
                     <option value="pill" style="background: #161b22;">Compact Pill</option>
                 </select>
-            
+            </div>
+            <div class="row">
+                <label>Scale</label>
+                <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+                <span style="font-size:11px; width:30px; text-align:right;" id="scaleVal">1.0</span>
+            </div>
+            <div class="row">
+                <label>Width</label>
+                <input type="range" id="widthSlider" min="200" max="800" step="10" value="400">
+                <span style="font-size:11px; width:30px; text-align:right;" id="widthVal">400px</span>
+            </div>
+        
             <div class="row">
                 <label>Цвет подложки</label>
                 <input type="range" id="bgColorSlider" min="0" max="360" value="220">
@@ -218,18 +230,6 @@
             </div>
         </div>
 
-        
-            <div class="row">
-                <label>Scale</label>
-                <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1.0">
-                <span style="font-size:11px; width:30px; text-align:right;" id="scaleVal">1.0</span>
-            </div>
-            <div class="row">
-                <label>Width</label>
-                <input type="range" id="widthSlider" min="200" max="800" step="10" value="400">
-                <span style="font-size:11px; width:30px; text-align:right;" id="widthVal">400px</span>
-            </div>
-        </div>
         <div class="section-title">АВТОПОКАЗ PLAYER</div>
         <div class="control-group">
             <div class="row">
@@ -367,7 +367,7 @@
                 settings.borderRadius = p.borderRadius;
                 settings.scale = p.scale;
                 settings.width = p.width;
-                updateUIFromSettings(); // Updates the sliders in the UI
+                updateUIFromSettings();
             }
             saveSettings(); 
         });
