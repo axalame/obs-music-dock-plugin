@@ -4,8 +4,9 @@
 
 ## Установка
 1. Скачайте архив из [Releases](https://github.com/axalame/obs-music-dock-plugin/releases).
-2. Распакуйте содержимое архива в папку OBS (обычно `C:\Program Files\obs-studio\`).
-3. Перезапустите OBS.
+2. Откройте архив и зайдите в папку `obs-music-dock`.
+3. Скопируйте папки `bin` и `data` в корневую папку вашего OBS Studio (туда, куда он у вас установлен, по умолчанию это `C:\Program Files\obs-studio\`), подтвердив слияние папок.
+4. Перезапустите OBS.
 
 ## Использование
 
